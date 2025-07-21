@@ -1,7 +1,6 @@
 import DotBackground from "@/components/dot-background";
 import Link from "next/link"
 import Image from "next/image"
-import logo from '../public/macLogo.svg'
 
 export default function Home() {
 
@@ -14,7 +13,7 @@ export default function Home() {
           <Link href={'/drivers'}>
               <button className="bg-amber-300 rounded-md pt-2 pb-2 p-4 font-bold text-black hover:scale-105 transition-all ease-in-out">Start Planning</button>
           </Link>
-          <Image src={logo} alt={"penis"} className="size-1/12"></Image>
+          <Image src={"/macLogo.svg"} alt={"penis"} className="size-1/12" width={0} height={0}></Image>
       </main>
     </>
   );

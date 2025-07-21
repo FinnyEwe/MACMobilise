@@ -1,4 +1,5 @@
 import {useStepContext} from "./StepperContextProvider";
+import { useEffect } from 'react';
 
 interface StepperContainerProps {
     id: number
@@ -10,7 +11,9 @@ const StepperContainer: React.FC<StepperContainerProps> = ({id, children})  => {
 
     const { setChosenId }  = useStepContext()
 
-    setChosenId(id)
+    useEffect(() => {
+      setChosenId(id);
+    }, [id, setChosenId])
 
     return (
         <div className="flex">
