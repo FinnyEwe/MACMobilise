@@ -9,7 +9,7 @@ import { useJsApiLoader } from '@react-google-maps/api';
 const libraries: 'places'[] = ['places'];
 
 export default function Home() {
-  const [address, setAddress] = useState<LatLngLiteral>();
+  const [searchOpen, setSearchOpen] = useState<boolean>(false);
   const [input, setInput] = useState('');
   const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
   const { isLoaded } = useJsApiLoader({
@@ -29,6 +29,8 @@ export default function Home() {
 
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newInput = e.target.value;
+
+    setSearchOpen(newInput.trim().length > 0)
     setInput(newInput);
     if (autocompleteServiceRef.current) {
       let wenis = autocompleteServiceRef.current.getPlacePredictions(
@@ -81,9 +83,12 @@ export default function Home() {
           {/*  <span>Enter the Maximum Passengers</span>*/}
           {/*  <Input></Input>*/}
           {/*</div>*/}
-          <div>
+          <div className="relative">
             <span>Enter Driver's Starting Address</span>
             <Input onChange={(e) => handleChange(e)} value={input}></Input>
+            {searchOpen && <div className=" w-[100%] bg-white z-10 absolute">
+              wenis
+            </div>}
           </div>
 
           <div className="flex justify-center gap-3">
@@ -91,9 +96,6 @@ export default function Home() {
             <button className="rounded bg-[rgb(252,211,77)] p-2 text-black">Add</button>
           </div>
         </div>
-        {/*<div className={"h-[50vh] w-[50%] rounded-2xl"}>*/}
-        {/*  <SimpleMap />*/}
-        {/*</div>*/}
 
         <div>
           <div id="map" className="h-[50vh] w-[35vw] rounded"></div>
