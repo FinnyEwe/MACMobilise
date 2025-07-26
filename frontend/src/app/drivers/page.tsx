@@ -6,11 +6,13 @@ import 'leaflet/dist/leaflet.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { GeoCoderResponse } from '@/lib/types';
 import { useJsApiLoader } from '@react-google-maps/api';
+import AutocompletePrediction = google.maps.places.AutocompletePrediction;
 const libraries: 'places'[] = ['places'];
 
 export default function Home() {
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
   const [input, setInput] = useState('');
+  const [predictions, setPredictions] = useState<AutocompletePrediction[]>([]);
   const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: 'AIzaSyDQ5LBkKvs3Ja_50XR7F_AtphUwir1phV8'!,
@@ -35,9 +37,9 @@ export default function Home() {
     if (autocompleteServiceRef.current) {
       let wenis = autocompleteServiceRef.current.getPlacePredictions(
         { input: newInput, componentRestrictions: { country: 'au' } },
-        (predictions, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-            console.log(predictions); // ✅ Here are your predictions
+        (predictionsResponse, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && predictionsResponse) {
+            setPredictions(predictionsResponse);
           } else {
             console.log('No predictions or error:', status);
           }
@@ -53,7 +55,6 @@ export default function Home() {
       maxZoom: 19,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
-    console.log('wenis');
 
     if (isLoaded){
       initialiseGoogle();
@@ -86,8 +87,8 @@ export default function Home() {
           <div className="relative">
             <span>Enter Driver's Starting Address</span>
             <Input onChange={(e) => handleChange(e)} value={input}></Input>
-            {searchOpen && <div className=" w-[100%] bg-white z-10 absolute">
-              wenis
+            {searchOpen && <div className=" w-[100%] bg-white z-10 absolute text-black rounded p-2">
+              {predictions && predictions.map((prediction) => <div>{prediction.description}</div>)}
             </div>}
           </div>
 
