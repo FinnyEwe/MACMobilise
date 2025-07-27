@@ -1,12 +1,13 @@
 'use client';
 import Stepper from '@/components/Stepper';
 import { Input } from '@/components/ui/input';
-import L, { LatLngLiteral } from 'leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import React, { useEffect, useRef, useState } from 'react';
-import { GeoCoderResponse } from '@/lib/types';
 import { useJsApiLoader } from '@react-google-maps/api';
 import AutocompletePrediction = google.maps.places.AutocompletePrediction;
+import SearchOption from '@/components/SearchOption';
+import {fetchCoords, initialiseGoogle} from '@/app/actions';
 const libraries: 'places'[] = ['places'];
 
 export default function Home() {
@@ -14,25 +15,28 @@ export default function Home() {
   const [input, setInput] = useState('');
   const [predictions, setPredictions] = useState<AutocompletePrediction[]>([]);
   const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
+
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: 'AIzaSyDQ5LBkKvs3Ja_50XR7F_AtphUwir1phV8'!,
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
     libraries,
   });
-  async function initialiseGoogle() {
-    const response = await fetch(
-      'https://maps.googleapis.com/maps/api/geocode/json?address=20+Heywood+Grove,+Endeavour+Hills,+AU&key=AIzaSyDQ5LBkKvs3Ja_50XR7F_AtphUwir1phV8',
-    );
 
-    const { AutocompleteService } = (await google.maps.importLibrary(
-      'places',
-    )) as google.maps.PlacesLibrary;
-    autocompleteServiceRef.current = new AutocompleteService();
+
+
+  function handleClick(prediction: AutocompletePrediction){
+    setSearchOpen(false)
+    let query = ""
+    const terms = prediction.terms
+        for (const term of terms){
+          query += `+${term["value"]}`
+        }
+    fetchCoords(query)
+    setInput(prediction.description)
   }
-
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newInput = e.target.value;
 
-    setSearchOpen(newInput.trim().length > 0)
+    setSearchOpen(newInput.trim().length > 0);
     setInput(newInput);
     if (autocompleteServiceRef.current) {
       let wenis = autocompleteServiceRef.current.getPlacePredictions(
@@ -45,7 +49,6 @@ export default function Home() {
           }
         },
       );
-
     }
   }
 
@@ -56,13 +59,17 @@ export default function Home() {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
 
-    if (isLoaded){
-      initialiseGoogle();
-    }
 
+    async function fetchAutoComplete() {
+      autocompleteServiceRef.current = await initialiseGoogle();
+    }
+    if (isLoaded) {
+      fetchAutoComplete();
+    }
     return () => {
       map?.remove();
     };
+
   }, [isLoaded]);
 
   return (
@@ -76,20 +83,25 @@ export default function Home() {
 
       <div className="mb-[2%] mt-[2%] flex gap-[15%]">
         <div className="flex flex-1 flex-col justify-center gap-3">
-          {/*<div>*/}
-          {/*  <span>Enter the Driver's Name</span>*/}
-          {/*  <Input></Input>*/}
-          {/*</div>*/}
-          {/*<div>*/}
-          {/*  <span>Enter the Maximum Passengers</span>*/}
-          {/*  <Input></Input>*/}
-          {/*</div>*/}
           <div className="relative">
             <span>Enter Driver's Starting Address</span>
             <Input onChange={(e) => handleChange(e)} value={input}></Input>
-            {searchOpen && <div className=" w-[100%] bg-white z-10 absolute text-black rounded p-2">
-              {predictions && predictions.map((prediction) => <div>{prediction.description}</div>)}
-            </div>}
+            {searchOpen && (
+              <div className="absolute z-10 w-[100%] rounded bg-white p-2 text-black">
+                {predictions &&
+                  predictions.map((prediction, index) => (
+                    <SearchOption key={index} option={prediction.description} onClick={()=>handleClick(prediction)}></SearchOption>
+                  ))}
+              </div>
+            )}
+          </div>
+          <div>
+            <span>Enter the Driver's Name</span>
+            <Input></Input>
+          </div>
+          <div>
+            <span>Enter the Maximum Passengers</span>
+            <Input></Input>
           </div>
 
           <div className="flex justify-center gap-3">
