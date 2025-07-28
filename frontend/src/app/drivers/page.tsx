@@ -12,16 +12,20 @@ const libraries: 'places'[] = ['places'];
 
 export default function Home() {
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
-  const [input, setInput] = useState('');
+  const [address, setAddress] = useState('');
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
   const [predictions, setPredictions] = useState<AutocompletePrediction[]>([]);
+  const [addressError, setAddressError] = useState<boolean>(false)
+  const [nameError, setNameError] = useState<boolean>(false)
+  const [numberError, setNumberError] = useState<boolean>(false)
+
   const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
     libraries,
   });
-
-
 
   function handleClick(prediction: AutocompletePrediction){
     setSearchOpen(false)
@@ -31,13 +35,14 @@ export default function Home() {
           query += `+${term["value"]}`
         }
     fetchCoords(query)
-    setInput(prediction.description)
+    setAddress(prediction.description)
   }
+
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newInput = e.target.value;
 
     setSearchOpen(newInput.trim().length > 0);
-    setInput(newInput);
+    setAddress(newInput);
     if (autocompleteServiceRef.current) {
       let wenis = autocompleteServiceRef.current.getPlacePredictions(
         { input: newInput, componentRestrictions: { country: 'au' } },
@@ -85,7 +90,7 @@ export default function Home() {
         <div className="flex flex-1 flex-col justify-center gap-3">
           <div className="relative">
             <span>Enter Driver's Starting Address</span>
-            <Input onChange={(e) => handleChange(e)} value={input}></Input>
+            <Input onChange={(e) => handleChange(e)} value={address}></Input>
             {searchOpen && (
               <div className="absolute z-10 w-[100%] rounded bg-white p-2 text-black">
                 {predictions &&
@@ -97,11 +102,11 @@ export default function Home() {
           </div>
           <div>
             <span>Enter the Driver's Name</span>
-            <Input></Input>
+            <Input onChange={(e) => setName(e.target.value)} value={name}></Input>
           </div>
           <div>
             <span>Enter the Maximum Passengers</span>
-            <Input></Input>
+            <Input onChange={(e) => setNumber(e.target.value)} value={number}></Input>
           </div>
 
           <div className="flex justify-center gap-3">
