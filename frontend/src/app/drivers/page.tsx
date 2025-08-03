@@ -7,35 +7,50 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useJsApiLoader } from '@react-google-maps/api';
 import AutocompletePrediction = google.maps.places.AutocompletePrediction;
 import SearchOption from '@/components/SearchOption';
-import {fetchCoords, initialiseGoogle} from '@/app/actions';
+import { fetchCoords, initialiseGoogle } from '@/app/actions';
+import { DriverData, GeoCoderResponse } from '@/lib/types';
 const libraries: 'places'[] = ['places'];
 
 export default function Home() {
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
   const [address, setAddress] = useState('');
   const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
+  const [number, setNumber] = useState<string>('');
   const [predictions, setPredictions] = useState<AutocompletePrediction[]>([]);
-  const [addressError, setAddressError] = useState<boolean>(false)
-  const [nameError, setNameError] = useState<boolean>(false)
-  const [numberError, setNumberError] = useState<boolean>(false)
-
+  const [addressError, setAddressError] = useState<boolean>(false);
+  const [nameError, setNameError] = useState<boolean>(false);
+  const [numberError, setNumberError] = useState<boolean>(false);
+  const [driverData, setDriverData] = useState<DriverData[]>([]);
   const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
     libraries,
   });
 
-  function handleClick(prediction: AutocompletePrediction){
-    setSearchOpen(false)
-    let query = ""
-    const terms = prediction.terms
-        for (const term of terms){
-          query += `+${term["value"]}`
-        }
-    fetchCoords(query)
-    setAddress(prediction.description)
+  async function handleDriverAdd() {
+    const passengerNum = parseInt(number);
+    const newItem = { address, name, passengerNum };
+    setDriverData([...driverData, newItem]);
+
+    const geoResponse: GeoCoderResponse = await fetchCoords(address);
+    if (mapRef.current !== null) {
+      L.marker([
+        geoResponse.results[0].geometry.location.lat,
+        geoResponse.results[0].geometry.location.lng,
+      ]).addTo(mapRef.current);
+    }
+  }
+  function handleClick(prediction: AutocompletePrediction) {
+    setSearchOpen(false);
+    let query = '';
+    const terms = prediction.terms;
+    for (const term of terms) {
+      query += `+${term['value']}`;
+    }
+
+    setAddress(prediction.description);
   }
 
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -64,6 +79,7 @@ export default function Home() {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
 
+    mapRef.current = map;
 
     async function fetchAutoComplete() {
       autocompleteServiceRef.current = await initialiseGoogle();
@@ -74,7 +90,6 @@ export default function Home() {
     return () => {
       map?.remove();
     };
-
   }, [isLoaded]);
 
   return (
@@ -95,7 +110,11 @@ export default function Home() {
               <div className="absolute z-10 w-[100%] rounded bg-white p-2 text-black">
                 {predictions &&
                   predictions.map((prediction, index) => (
-                    <SearchOption key={index} option={prediction.description} onClick={()=>handleClick(prediction)}></SearchOption>
+                    <SearchOption
+                      key={index}
+                      option={prediction.description}
+                      onClick={() => handleClick(prediction)}
+                    ></SearchOption>
                   ))}
               </div>
             )}
@@ -111,7 +130,12 @@ export default function Home() {
 
           <div className="flex justify-center gap-3">
             <button className="rounded bg-[rgb(252,211,77)] p-2 text-black">Next</button>
-            <button className="rounded bg-[rgb(252,211,77)] p-2 text-black">Add</button>
+            <button
+              className="rounded bg-[rgb(252,211,77)] p-2 text-black"
+              onClick={handleDriverAdd}
+            >
+              Add
+            </button>
           </div>
         </div>
 

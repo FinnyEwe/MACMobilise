@@ -11,6 +11,6 @@ export async function fetchCoords(address: string){
   const response = await fetch(
     `https://maps.googleapis.com/maps/api/geocode/json?address=${address},+AU&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`,
   );
-  console.log(await response.json())
+  return await (response.json())
 }
 

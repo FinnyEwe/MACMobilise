@@ -17,3 +17,10 @@ export interface GeoCoderResponse {
   }>;
   status: string;
 }
+
+export interface DriverData {
+  address: string,
+  name: string,
+  passengerNum: number
+
+}
