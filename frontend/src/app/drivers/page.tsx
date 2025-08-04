@@ -11,6 +11,14 @@ import { fetchCoords, initialiseGoogle } from '@/app/actions';
 import { DriverData, GeoCoderResponse } from '@/lib/types';
 const libraries: 'places'[] = ['places'];
 
+
+const customIcon = L.icon({
+  iconUrl: 'marker.png',   // your custom icon file
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
+
 export default function Home() {
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
   const [address, setAddress] = useState('');
@@ -36,10 +44,13 @@ export default function Home() {
 
     const geoResponse: GeoCoderResponse = await fetchCoords(address);
     if (mapRef.current !== null) {
-      L.marker([
+      const marker = L.marker([
         geoResponse.results[0].geometry.location.lat,
         geoResponse.results[0].geometry.location.lng,
-      ]).addTo(mapRef.current);
+      ],  { icon: customIcon }).addTo(mapRef.current)
+
+      marker.bindPopup("<b>Hello world!</b><br>I am a popup.");
+
     }
   }
   function handleClick(prediction: AutocompletePrediction) {
