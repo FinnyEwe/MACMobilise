@@ -6,10 +6,12 @@ import 'leaflet/dist/leaflet.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { useJsApiLoader } from '@react-google-maps/api';
 import AutocompletePrediction = google.maps.places.AutocompletePrediction;
+import AutocompleteService = google.maps.places.AutocompleteService;
 import SearchOption from '@/components/SearchOption';
-import { fetchCoords, initialiseGoogle } from '@/app/actions';
+import { fetchCoords, fetchit } from '@/app/actions';
 import { DriverData, GeoCoderResponse } from '@/lib/types';
 const libraries: 'places'[] = ['places'];
+
 
 
 const customIcon = L.icon({
@@ -47,12 +49,13 @@ export default function Home() {
       const marker = L.marker([
         geoResponse.results[0].geometry.location.lat,
         geoResponse.results[0].geometry.location.lng,
-      ],  { icon: customIcon }).addTo(mapRef.current)
+      ], { icon: customIcon }).addTo(mapRef.current);
 
-      marker.bindPopup("<b>Hello world!</b><br>I am a popup.");
+      marker.bindPopup('<b>Hello world!</b><br>I am a popup.');
 
     }
   }
+
   function handleClick(prediction: AutocompletePrediction) {
     setSearchOpen(false);
     let query = '';
@@ -70,8 +73,9 @@ export default function Home() {
     setSearchOpen(newInput.trim().length > 0);
     setAddress(newInput);
     if (autocompleteServiceRef.current) {
-      let wenis = autocompleteServiceRef.current.getPlacePredictions(
+      await autocompleteServiceRef.current.getPlacePredictions(
         { input: newInput, componentRestrictions: { country: 'au' } },
+
         (predictionsResponse, status) => {
           if (status === google.maps.places.PlacesServiceStatus.OK && predictionsResponse) {
             setPredictions(predictionsResponse);
@@ -93,8 +97,12 @@ export default function Home() {
     mapRef.current = map;
 
     async function fetchAutoComplete() {
-      autocompleteServiceRef.current = await initialiseGoogle();
+      const { AutocompleteService } = (await google.maps.importLibrary(
+        'places',
+      )) as google.maps.PlacesLibrary;
+      autocompleteServiceRef.current = new AutocompleteService()
     }
+
     if (isLoaded) {
       fetchAutoComplete();
     }
@@ -102,6 +110,11 @@ export default function Home() {
       map?.remove();
     };
   }, [isLoaded]);
+
+  useEffect(() => {
+      fetchit()
+    }
+  , []);
 
   return (
     <main className="flex flex-col px-[5%]">

@@ -24,3 +24,26 @@ export interface DriverData {
   passengerNum: number
 
 }
+
+
+export type NotionListResponse = {
+  object: "list";
+  results: NotionPage[];
+};
+
+interface NotionPage {
+  object: "page";
+  id: string;
+  created_time: string; // ISO date string
+  last_edited_time: string; // ISO date string
+  created_by: Record<string, any>;
+  last_edited_by: Record<string, any>;
+  cover: null | Record<string, any>;
+  icon: Record<string, any> | null;
+  parent: Record<string, any>;
+  archived: boolean;
+  in_trash: boolean;
+  properties: Record<string, any>; // Notion page properties are dynamic
+  url: string;
+  public_url: string | null;
+};
