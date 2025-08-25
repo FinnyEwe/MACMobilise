@@ -1,3 +1,5 @@
+import { StaticImageData } from 'next/image';
+
 export interface GeoCoderResponse {
   results: Array<{
     address_components: Array<{
@@ -19,20 +21,19 @@ export interface GeoCoderResponse {
 }
 
 export interface DriverData {
-  address: string,
-  name: string,
-  passengerNum: number
-
+  address: string;
+  name: string;
+  passengerNum: number;
+  url: string;
 }
 
-
 export type NotionListResponse = {
-  object: "list";
+  object: 'list';
   results: NotionPage[];
 };
 
 interface NotionPage {
-  object: "page";
+  object: 'page';
   id: string;
   created_time: string; // ISO date string
   last_edited_time: string; // ISO date string
@@ -46,4 +47,10 @@ interface NotionPage {
   properties: Record<string, any>; // Notion page properties are dynamic
   url: string;
   public_url: string | null;
-};
+}
+
+export interface NameOption {
+  label: string;
+  value: string;
+  pageId: string;
+}
