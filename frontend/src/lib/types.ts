@@ -1,4 +1,4 @@
-import { StaticImageData } from 'next/image';
+import { LatLngExpression } from 'leaflet';
 
 export interface GeoCoderResponse {
   results: Array<{
@@ -25,6 +25,14 @@ export interface DriverData {
   name: string;
   passengerNum: number;
   url: string;
+  latLong?: LatLngExpression;
+}
+
+export interface PassengerData {
+  address: string;
+  name: string;
+  url: string;
+  latLong?: LatLngExpression;
 }
 
 export type NotionListResponse = {

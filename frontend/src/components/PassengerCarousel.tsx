@@ -1,26 +1,25 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import { NameOption } from '@/lib/types';
-import { useDriverStore, useMapsStore, useNameOptionsStore } from '@/stores';
+import { usePassengerStore, useNameOptionsStore, useMapsStore } from '@/stores';
 import L from 'leaflet';
 
-export default function DriverCarousel() {
+export default function PassengerCarousel() {
   const [startIndex, setStartIndex] = useState(0);
   const visibleCount = 3;
-  const drivers = useDriverStore((state) => state.driverData);
-  const setDrivers = useDriverStore((state) => state.setDriverData);
+  const passengers = usePassengerStore((state) => state.passengerData);
+  const setPassengers = usePassengerStore((state) => state.setPassengerData);
   const setOptions = useNameOptionsStore((state) => state.setOptions);
   const originalOptions = useNameOptionsStore((state) => state.originalOptions);
   const map = useMapsStore((state) => state.map);
   const setMarkers = useMapsStore((state) => state.setMarkers);
   const markers = useMapsStore((state) => state.markers);
 
-  function deleteDriver(name: string) {
-    setDrivers((prev) => prev.filter((driver) => driver.name !== name));
-    const driver = originalOptions.find((option: NameOption) => option.value === name);
-    console.log('driver', driver);
-    if (driver) setOptions((prev) => [...prev, driver]);
-    setStartIndex((prev) => Math.min(prev, Math.max(drivers.length - 1 - visibleCount, 0)));
+  function deletePassenger(name: string) {
+    setPassengers((prev) => prev.filter((p) => p.name !== name));
+    const passenger = originalOptions.find((option: NameOption) => option.value === name);
+    if (passenger) setOptions((prev) => [...prev, passenger]);
+    setStartIndex((prev) => Math.min(prev, Math.max(passengers.length - 1 - visibleCount, 0)));
 
     if (map) {
       const newMarkers = markers;
@@ -31,31 +30,39 @@ export default function DriverCarousel() {
   }
 
   const prevSlide = () => {
-    setStartIndex((prev) => (prev === 0 ? Math.max(drivers.length - visibleCount, 0) : prev - 1));
+    setStartIndex((prev) =>
+      prev === 0 ? Math.max(passengers.length - visibleCount, 0) : prev - 1,
+    );
   };
 
   const nextSlide = () => {
-    setStartIndex((prev) => (prev + visibleCount >= drivers.length ? 0 : prev + 1));
+    setStartIndex((prev) => (prev + visibleCount >= passengers.length ? 0 : prev + visibleCount));
   };
 
-  if (drivers.length === 0) return <p>No drivers added yet.</p>;
+  if (passengers.length === 0) return <p>No passengers added yet.</p>;
 
-  const visibleDrivers = drivers.slice(startIndex, startIndex + visibleCount);
+  const visiblePassengers =
+    passengers.length > visibleCount
+      ? Array.from(
+          { length: visibleCount },
+          (_, i) => passengers[(startIndex + i) % passengers.length],
+        )
+      : passengers;
 
   return (
     <div className="relative mx-auto mt-10 max-w-4xl justify-center">
-      {/* Drivers Row */}
+      {/* Passengers Row */}
       <div className="flex flex-nowrap gap-4 overflow-hidden">
-        {visibleDrivers.map((driver, idx) => (
+        {visiblePassengers.map((p, idx) => (
           <div
-            key={driver.name + `${idx}`}
+            key={p.name + idx}
             className="flex h-[190px] w-[190px] flex-col items-center rounded-2xl bg-white p-4 shadow-md transition-all duration-300"
           >
-            {driver.url ? (
+            {p.url ? (
               <div>
                 <img
-                  src={driver.url}
-                  alt={driver.name}
+                  src={p.url}
+                  alt={p.name}
                   className="mb-2 h-[70px] w-[70px] rounded-full object-cover"
                 />
               </div>
@@ -65,13 +72,13 @@ export default function DriverCarousel() {
               </div>
             )}
             <h3 className="text-md block h-20 w-full truncate font-semibold leading-tight text-black">
-              {driver.name}
+              {p.name}
             </h3>
-            <p className="text-sm text-gray-600">Max Passengers: {driver.passengerNum}</p>
+            <p className="block h-20 w-full truncate text-sm text-gray-500">{p.address}</p>
 
             {/* Delete Button */}
             <button
-              onClick={() => deleteDriver(driver.name)}
+              onClick={() => deletePassenger(p.name)}
               className="mt-2 flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs text-red-600 hover:bg-red-200"
             >
               <Trash2 className="h-3 w-3" /> Delete
@@ -81,7 +88,7 @@ export default function DriverCarousel() {
       </div>
 
       {/* Controls */}
-      {drivers.length > visibleCount && (
+      {passengers.length > visibleCount && (
         <>
           <button
             onClick={prevSlide}

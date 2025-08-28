@@ -1,5 +1,3 @@
-'use client';
-
 import * as React from 'react';
 import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -44,7 +42,9 @@ export function Combobox({ className, options, value, onChange }: ComboboxProps)
         <Command>
           <CommandInput placeholder="Search person..." />
           <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandEmpty className="p-2 text-sm text-black">
+              Person doesn't exist or is already in use.
+            </CommandEmpty>
             <CommandGroup>
               {options?.map((opt: NameOption) => (
                 <CommandItem

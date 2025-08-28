@@ -90,10 +90,8 @@ async function convertHeic(url: string) {
   const response = await fetch(url);
   const arrayBuffer = await response.arrayBuffer();
 
-  // Convert ArrayBuffer to Node Buffer
   const buffer = Buffer.from(arrayBuffer);
 
-  // Pass Node Buffer to heic-convert
   const outputBuffer = await convert({
     buffer: buffer as any, // bypass type checking
     format: 'JPEG',

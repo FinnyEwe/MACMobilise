@@ -29,7 +29,8 @@
     "sharp": "^0.34.3",
     "tailwind-merge": "^3.3.1",
     "tailwind-variants": "^1.0.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@types/google-map-react": "^2.1.10",
